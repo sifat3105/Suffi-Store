@@ -1,0 +1,131 @@
+<svg width="1000" height="2000" viewBox="0 0 500 600" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <filter id="softGlow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="8" result="coloredBlur"/>
+      <feMerge>
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+    
+    <filter id="floorShadow" x="-50%" y="-50%" width="200%" height="200%">
+        <feGaussianBlur stdDeviation="15"/>
+    </filter>
+
+    <radialGradient id="bodyGrad" cx="30%" cy="30%" r="80%" fx="30%" fy="30%">
+      <stop offset="0%" style="stop-color:#8BBCCF;stop-opacity:1" />
+      <stop offset="50%" style="stop-color:#5D8A9E;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#365261;stop-opacity:1" />
+    </radialGradient>
+
+    <linearGradient id="visorGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#445566;stop-opacity:1" />
+      <stop offset="20%" style="stop-color:#222830;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#111111;stop-opacity:1" />
+    </linearGradient>
+
+    <radialGradient id="eyeGrad" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" style="stop-color:#AAFFFF;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#00DDFF;stop-opacity:1" />
+    </radialGradient>
+    
+    <radialGradient id="ballGrad" cx="40%" cy="40%" r="60%" fx="30%" fy="30%">
+      <stop offset="0%" style="stop-color:#8BBCCF;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#365261;stop-opacity:1" />
+    </radialGradient>
+  </defs>
+
+  <g id="robot">
+    <animateTransform 
+        attributeName="transform" 
+        type="translate" 
+        values="0 0; 50 0; 0 0; -50 0; 0 0" 
+        keyTimes="0; 0.25; 0.5; 0.75; 1"
+        calcMode="spline" 
+        keySplines="0.45 0 0.55 1; 0.45 0 0.55 1; 0.45 0 0.55 1; 0.45 0 0.55 1"
+        dur="4s" 
+        repeatCount="indefinite" />
+
+    <ellipse cx="250" cy="530" rx="100" ry="25" fill="#000000" opacity="0.3" filter="url(#floorShadow)" />
+
+    <g transform="translate(155, 385) scale(0.6) translate(-155, -385)">
+      <g>  
+      <animateTransform 
+              attributeName="transform" 
+              type="rotate" 
+              values="-15 155 385; 15 155 385; -15 155 385" 
+              dur="1.2s" 
+              repeatCount="indefinite" />
+      
+        <path d="M170,360 
+                 Q70,340 40,390 
+                 Q30,440 80,440 
+                 Q130,440 160,390 Z" 
+            fill="url(#bodyGrad)" stroke="#2F4855" stroke-width="1" />
+        <ellipse cx="80" cy="390" rx="30" ry="12" fill="#FFFFFF" opacity="0.15" transform="rotate(20 80 390)"/>
+        </g>
+    </g>
+
+    <g transform="translate(345, 385) scale(0.6) translate(-345, -385)">
+        <g>
+          <animateTransform 
+              attributeName="transform" 
+              type="rotate" 
+              values="-15 345 385; 15 345 385; -15 345 385" 
+              dur="1.2s" 
+              repeatCount="indefinite" />
+          <path d="M330,360 
+                  Q430,340 460,390 
+                  Q470,440 420,440 
+                  Q370,440 340,390 Z" 
+              fill="url(#bodyGrad)" stroke="#2F4855" stroke-width="1" />
+          <ellipse cx="420" cy="390" rx="30" ry="12" fill="#FFFFFF" opacity="0.25" transform="rotate(-20 420 390)"/>
+        </g>
+    </g>
+
+    <path d="M180,340 
+             Q150,340 150,400 
+             Q150,500 250,500 
+             Q350,500 350,400 
+             Q350,340 320,340 Z" 
+          fill="url(#bodyGrad)" />
+    <ellipse cx="220" cy="380" rx="40" ry="30" fill="#FFFFFF" opacity="0.1" transform="rotate(-20 220 380)"/>
+
+
+<g transform="translate(0, 10)">
+      <line x1="250" y1="130" x2="250" y2="80" stroke="#5D8A9E" stroke-width="12" stroke-linecap="round"/>
+      <circle cx="250" cy="70" r="18" fill="url(#ballGrad)" />
+      <rect x="110" y="130" width="280" height="230" rx="110" ry="110" fill="url(#bodyGrad)" />
+      <ellipse cx="200" cy="160" rx="80" ry="40" fill="#FFFFFF" opacity="0.15" transform="rotate(-10 200 160)" />
+      <path d="M150,230 
+               Q150,200 250,200 
+               Q350,200 350,230 
+               L350,290 
+               Q350,330 250,330 
+               Q150,330 150,290 Z" 
+            fill="url(#visorGrad)" stroke="#222" stroke-width="2"/>
+      
+      <path d="M165,230 Q200,210 250,210 Q300,210 335,230 Q300,225 250,225 Q200,225 165,230 Z" 
+            fill="#FFFFFF" opacity="0.4" />
+      <ellipse cx="180" cy="240" rx="20" ry="10" fill="#FFFFFF" opacity="0.5" transform="rotate(-30 180 240)"/>
+
+      <ellipse cx="200" cy="275" rx="28" ry="28" fill="url(#eyeGrad)" filter="url(#softGlow)">
+        <animate 
+            attributeName="ry" 
+            values="28; 28; 1; 28; 28" 
+            keyTimes="0; 0.45; 0.5; 0.55; 1" 
+            dur="1s" 
+            repeatCount="indefinite" />
+      </ellipse>
+
+      <ellipse cx="300" cy="275" rx="28" ry="28" fill="url(#eyeGrad)" filter="url(#softGlow)">
+        <animate 
+            attributeName="ry" 
+            values="28; 28; 1; 28; 28" 
+            keyTimes="0; 0.45; 0.5; 0.55; 1" 
+            dur="1s" 
+            repeatCount="indefinite" />
+      </ellipse>
+    </g>
+  </g>
+</svg>

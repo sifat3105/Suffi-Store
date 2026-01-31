@@ -1,0 +1,8 @@
+venv/
+*.pyc
+__pycache__/
+db.sqlite3
+.env
+app_data_backup.json
+database_backup_for_teammate.sqlite3
+fake_data_db.py

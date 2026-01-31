@@ -1,0 +1,624 @@
+{% extends 'admin/base_site.html' %}
+{% load static %}
+
+{% block extrastyle %}
+{{ block.super }}
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+<link rel="stylesheet" href="{% static 'css/admin_dashboard.css' %}?v=1.1">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+    /* Fix column widths and truncate long text */
+    .data-table {
+        width: 100%;
+        table-layout: fixed;
+    }
+
+    .data-table th,
+    .data-table td {
+        padding: 8px 5px;
+        text-align: left;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    /* Specific column widths for each table */
+    .data-table th:nth-child(1),
+    .data-table td:nth-child(1) {
+        width: 25%;
+    }
+
+    .data-table th:nth-child(2),
+    .data-table td:nth-child(2) {
+        width: 20%;
+    }
+
+    .data-table th:nth-child(3),
+    .data-table td:nth-child(3) {
+        width: 15%;
+    }
+
+    .data-table th:nth-child(4),
+    .data-table td:nth-child(4) {
+        width: 15%;
+    }
+
+    .data-table th:nth-child(5),
+    .data-table td:nth-child(5) {
+        width: 25%;
+    }
+
+    /* For wallet documents table (4 columns) */
+    .tables-grid>div:nth-child(4) .data-table th,
+    .tables-grid>div:nth-child(4) .data-table td {
+        width: 25%;
+    }
+
+    /* Hover effect to show full text */
+    .data-table td {
+        position: relative;
+    }
+
+    .data-table td:hover {
+        overflow: visible;
+        white-space: normal;
+        z-index: 10;
+    }
+
+    /* Table header styling */
+    .data-table thead tr {
+        background-color: #343a40;
+        color: white;
+    }
+
+    .data-table th {
+        padding: 10px 5px;
+        font-weight: 600;
+        text-transform: uppercase;
+        font-size: 0.85em;
+        letter-spacing: 0.5px;
+        /* background-color: #9b34d3; */
+        color: rgb(0, 0, 0);
+    }
+
+    /* Special styling for notifications table header */
+    .tables-grid>div:nth-child(3) .data-table thead tr {
+        background-color: #6c757d;
+        color: white;
+    }
+
+    /* Special styling for trips table header */
+    .tables-grid>div:nth-child(1) .data-table thead tr {
+        background-color: #007bff;
+        color: white;
+    }
+
+    /* Zebra striping for table rows */
+    .data-table tbody tr:nth-child(odd) {
+        background-color: #f8f9fa;
+    }
+
+    .data-table tbody tr:nth-child(even) {
+        background-color: #ffffff;
+    }
+
+    /* Hover effect for rows */
+    .data-table tbody tr:hover {
+        background-color: #e9ecef !important;
+        cursor: pointer;
+    }
+
+    /* Clickable row styling */
+    .data-table tbody tr {
+        cursor: pointer;
+        transition: background-color 0.2s ease;
+    }
+</style>
+
+<script>
+    // Make table rows clickable and navigate to appropriate admin pages
+    function makeTablesClickable() {
+        // Recent Trips table - navigate to trip detail
+        document.querySelectorAll('.tables-grid > div:nth-child(1) .data-table tbody tr').forEach(row => {
+            row.addEventListener('click', function () {
+                const tripName = this.cells[0].textContent.trim();
+                window.location.href = `/admin/home/trip/?q=${encodeURIComponent(tripName)}`;
+            });
+        });
+
+        // Recent Expenses table - navigate to expense detail
+        document.querySelectorAll('.tables-grid > div:nth-child(2) .data-table tbody tr').forEach(row => {
+            row.addEventListener('click', function () {
+                const expenseTitle = this.cells[0].textContent.trim();
+                window.location.href = `/admin/expenses/expense/?q=${encodeURIComponent(expenseTitle)}`;
+            });
+        });
+
+        // Recent Notifications table - navigate to notification detail
+        document.querySelectorAll('.tables-grid > div:nth-child(3) .data-table tbody tr').forEach(row => {
+            row.addEventListener('click', function () {
+                const notificationTitle = this.cells[0].textContent.trim();
+                window.location.href = `/admin/notifications/notification/?q=${encodeURIComponent(notificationTitle)}`;
+            });
+        });
+
+        // Recent Wallet Documents table - navigate to wallet document detail
+        document.querySelectorAll('.tables-grid > div:nth-child(4) .data-table tbody tr').forEach(row => {
+            row.addEventListener('click', function () {
+                const docTitle = this.cells[0].textContent.trim();
+                window.location.href = `/admin/wallet/wallet/?q=${encodeURIComponent(docTitle)}`;
+            });
+        });
+    }
+
+    // Initialize clickable tables when page loads
+    document.addEventListener('DOMContentLoaded', makeTablesClickable);
+</script>
+{% endblock %}
+
+{% block content %}
+<div class="dashboard-container">
+    <!-- <h1 class="dashboard-title">ShowMe Dashboard</h1> -->
+
+    <!-- Summary Cards Row -->
+    <div class="cards-grid">
+        <!-- Users Card -->
+        <div class="stat-card card-blue">
+            <div class="card-icon">
+                <span class="material-icons">people</span>
+            </div>
+            <div class="card-content">
+                <h3>Total Users</h3>
+                <p class="stat-number">{{ total_users|default:"0" }}</p>
+                <div class="card-footer">
+                    <!-- <span class="badge badge-success">{{ verified_users|default:"0" }} verified</span>
+                        <span class="badge badge-info">+{{ new_users_30d|default:"0" }} this month</span> -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Trips Card -->
+        <div class="stat-card card-purple">
+            <div class="card-icon">
+                <span class="material-icons">people</span>
+            </div>
+            <div class="card-content">
+                <h3>Logged-in Users</h3>
+                <p class="stat-number">{{ login_users|default:"0" }}</p>
+                <div class="card-footer">
+                    <!-- <span class="badge badge-warning">{{ upcoming_trips|default:"0" }} upcoming</span> -->
+                    <!-- <span class="badge badge-success">{{ current_trips|default:"0" }} active</span> -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Expenses Card -->
+        <div class="stat-card card-green">
+            <div class="card-icon">
+                <span class="material-icons">account_circle</span>
+            </div>
+            <div class="card-content">
+                <h3>Guest Users</h3>
+                <p class="stat-number">{{ guest_users|default:"0" }}</p>
+                <div class="card-footer">
+                    <!-- <span class="badge badge-info">{{ total_expense_splits|default:"0" }} splits</span>
+                        <span class="badge badge-success">+{{ new_expenses_30d|default:"0" }} this month</span> -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Todos Card -->
+        <div class="stat-card card-orange">
+            <div class="card-icon">
+                <span class="material-icons">sell</span>
+            </div>
+            <div class="card-content">
+                <h3>Number of Sells</h3>
+                <p class="stat-number">{{ total_sell|default:"0" }}</p>
+                <div class="card-footer">
+                    <!-- <span class="badge badge-success">{{ completion_rate|default:"0" }}% complete</span>
+                        <span class="badge badge-danger">{{ overdue_todos|default:"0" }} overdue</span> -->
+                </div>
+            </div>
+        </div>
+        <!-- Wallet Card -->
+        <div class="stat-card card-teal">
+            <div class="card-icon">
+                <span class="material-icons">inventory_2</span>
+            </div>
+            <div class="card-content">
+                <h3>Total Products</h3>
+                <p class="stat-number">{{ total_products|default:"0" }}</p>
+                <div class="card-footer">
+                    <!-- <span class="badge badge-warning">{{ expiring_soon|default:"0" }} expiring soon</span>
+                        <span class="badge badge-info">{{ product_members_count|default:"0" }} members</span> -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Notifications Card -->
+        <div class="stat-card card-red">
+            <div class="card-icon">
+                <span class="material-icons">build_circle</span>
+            </div>
+            <div class="card-content">
+                <h3>Total Parts</h3>
+                <p class="stat-number">{{ total_parts|default:"0" }}</p>
+                <div class="card-footer">
+                    <!-- <span class="badge badge-danger">{{ unread_notifications|default:"0" }} unread</span>
+                        <span class="badge badge-success">{{ read_notifications|default:"0" }} read</span> -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Messages Card -->
+        <div class="stat-card card-indigo">
+            <div class="card-icon">
+                <span class="material-icons">rate_review</span>
+            </div>
+            <div class="card-content">
+                <h3>Total Reviews</h3>
+                <p class="stat-number">{{ total_reviews|default:"0" }}</p>
+                <div class="card-footer">
+                    <!-- <span class="badge badge-info">{{ active_chat_trips|default:"0" }} active chats</span> -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Bookings Card -->
+        <div class="stat-card card-pink">
+            <div class="card-icon">
+                <span class="material-icons">attach_money</span>
+            </div>
+            <div class="card-content">
+                <h3>Revenue</h3>
+                <p class="stat-number">{{ total_revenue|default:"0" }}</p>
+                <div class="card-footer">
+                    <!-- <span class="badge badge-warning">{{ upcoming_bookings|default:"0" }} upcoming</span>
+                        <span class="badge badge-secondary">{{ past_bookings|default:"0" }} past</span> -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Charts Row -->
+    <div class="charts-grid">
+        <!-- User Growth Chart -->
+        <div class="chart-card">
+            <h3 class="chart-title">User Growth (Last 12 Months)</h3>
+            <canvas id="userGrowthChart"></canvas>
+        </div>
+
+        <!-- Review Growth Chart -->
+        <div class="chart-card">
+            <h3 class="chart-title">Review Growth (Last 12 Months)</h3>
+            <canvas id="reviewGrowthChart"></canvas>
+        </div>
+
+        <!-- Order Status Distribution -->
+        <div class="chart-card">
+            <h3 class="chart-title">Order Status Distribution</h3>
+            <canvas id="orderStatusChart"></canvas>
+        </div>
+
+    </div>
+
+    <!-- AI Agent Floating Component -->
+    <div id="ai-agent-container" 
+        style="position: fixed; bottom: 30px; right: 50px; z-index: 1000; font-family: 'Inter', sans-serif;">
+        <!-- Chat Box -->
+        <div id="ai-chat-box"
+            style="display: none; width: 350px; height: 500px; background: white; border: 1px solid #e2e8f0; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); flex-direction: column; overflow: hidden; margin-bottom: 16px;">
+            <!-- Header -->
+            <div
+                style="padding: 16px; background: #f8fafc; border-bottom: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center;">
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <div
+                        style="width: 32px; height: 32px; background: #e0f2fe; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #0284c7;">
+                        <img src="{% static 'ai_agent_logo.svg' %}" alt="AI Icon" style="width: 20px; height: 20px;">
+                    </div>
+                    <div>
+                        <h3 style="margin: 0; font-size: 14px; font-weight: 600;">AI Assistant</h3>
+                        <p style="margin: 0; font-size: 11px; color: #64748b;">Always here to help</p>
+                    </div>
+                </div>
+                <button onclick="toggleAIChat()"
+                    style="background: none; border: none; cursor: pointer; color: #64748b; display: flex; align-items: center; justify-content: center;">
+                    <span class="material-icons" style="font-size: 18px;">close</span>
+                </button>
+            </div>
+
+            <!-- Messages Area -->
+            <div id="ai-messages"
+                style="flex: 1; overflow-y: auto; padding: 16px; display: flex; flex-direction: column; gap: 12px;">
+                <!-- AI Message -->
+                <div style="display: flex; gap: 8px; max-width: 85%;">
+                    <div
+                        style="width: 28px; height: 28px; background: #f1f5f9; border-radius: 50%; flex-shrink: 0; display: flex; align-items: center; justify-content: center;">
+                        <span class="material-icons" style="font-size: 14px; color: #64748b;">auto_awesome</span>
+                    </div>
+                    <div
+                        style="background: #f8fafc; border: 1px solid #e2e8f0; padding: 10px 14px; border-radius: 12px; border-top-left-radius: 0; font-size: 13px; line-height: 1.5;">
+                        Hi! I'm your AI Assistant. How can I help you manage your dashboard today?
+                    </div>
+                </div>
+            </div>
+
+            <!-- Input Area -->
+            <div style="padding: 16px; border-top: 1px solid #e2e8f0; background: white;">
+                <form onsubmit="sendAIMessage(event)" style="display: flex; gap: 8px;">
+                    <input id="ai-input" type="text" placeholder="Ask me anything..."
+                        style="flex: 1; padding: 8px 12px; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 13px; outline: none; transition: border-color 0.2s;"
+                        onfocus="this.style.borderColor='#0284c7'" onblur="this.style.borderColor='#e2e8f0'">
+                    <button type="submit"
+                        style="background: #0284c7; color: white; border: none; width: 36px; height: 36px; border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: transform 0.2s;"
+                        onmousedown="this.style.transform='scale(0.95)'" onmouseup="this.style.transform='scale(1)'">
+                        <span class="material-icons" style="font-size: 18px;">send</span>
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Toggle Button & Tooltip -->
+        <div style="display: flex; flex-direction: column; align-items: flex-end;">
+            <!-- Tooltip -->
+            <div id="ai-tooltip"
+                style="background: white; border: 1px solid #e2e8f0; padding: 8px 16px; border-radius: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); font-size: 13px; font-weight: 500; margin-bottom: 12px; position: relative; white-space: nowrap;color: red; border-color: rgb(250, 65, 96);">
+                Hi, I am your AI Agent
+                <div
+                    style="position: absolute; bottom: -6px; right: 20px; width: 12px; height: 12px; background: white; border-right: 1px solid #e2e8f0; border-bottom: 1px solid #e2e8f0; transform: rotate(45deg);">
+                </div>
+            </div>
+
+            <!-- Main Button -->
+            <button onclick="toggleAIChat()"
+                style="width: 100px; height: 100px; border-radius: 50%; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); background: transparent;"
+                onmouseover="this.style.transform='scale(1.1)'"
+                onmouseout="this.style.transform='scale(1)'">
+                <img src="{% static 'ai_agent_logo.svg' %}" alt="AI Icon" style="width: 150px; height: 150px;">
+            </button>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Chart.js Configuration
+    const chartColors = {
+        blue: 'rgba(59, 130, 246, 0.8)',
+        purple: 'rgba(139, 92, 246, 0.8)',
+        green: 'rgba(34, 197, 94, 0.8)',
+        orange: 'rgba(251, 146, 60, 0.8)',
+        red: 'rgba(239, 68, 68, 0.8)',
+        teal: 'rgba(20, 184, 166, 0.8)',
+        pink: 'rgba(236, 72, 153, 0.8)',
+        indigo: 'rgba(99, 102, 241, 0.8)',
+    };
+
+    // User Growth Chart
+    const userGrowthData = {{ user_growth|default:"[]"|safe }};
+    if (userGrowthData && userGrowthData.length > 0) {
+        new Chart(document.getElementById('userGrowthChart'), {
+            type: 'line',
+            data: {
+                labels: userGrowthData.map(d => d.month),
+                datasets: [{
+                    label: 'New Users',
+                    data: userGrowthData.map(d => d.count),
+                    borderColor: chartColors.blue,
+                    backgroundColor: chartColors.blue,
+                    tension: 0.4,
+                    fill: true
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false }
+                },
+                scales: {
+                    y: { beginAtZero: true }
+                }
+            }
+        });
+    }
+
+    // Review Growth Chart
+    const reviewGrowthData = {{ review_growth|default:"[]"|safe }};
+    if (reviewGrowthData && reviewGrowthData.length > 0) {
+        new Chart(document.getElementById('reviewGrowthChart'), {
+            type: 'line',
+            data: {
+                labels: reviewGrowthData.map(d => d.month),
+                datasets: [{
+                    label: 'New Reviews',
+                    data: reviewGrowthData.map(d => d.count),
+                    borderColor: chartColors.pink,
+                    backgroundColor: chartColors.pink,
+                    tension: 0.4,
+                    fill: true
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false }
+                },
+                scales: {
+                    y: { beginAtZero: true }
+                }
+            }
+        });
+    }
+
+    // Order Status Distribution Chart (AJAX fetch)
+    (function () {
+        fetch('/api/status-distribution/')
+            .then(response => response.json())
+            .then(orderStatusData => {
+                if (orderStatusData && orderStatusData.length > 0) {
+                    const orderStatusMap = {
+                        'ORDER_PENDING': 'Order Pending',
+                        'IN_TRANSIT': 'In Transit',
+                        'Processing': 'Processing',
+                        'Delivered': 'Delivered',
+                        'Cancelled': 'Cancelled'
+                    };
+                    const labels = orderStatusData.map(d => orderStatusMap[d.status] || d.status);
+                    const data = orderStatusData.map(d => d.count);
+                    const colors = [chartColors.blue, chartColors.purple, chartColors.green, chartColors.orange, chartColors.red];
+                    new Chart(document.getElementById('orderStatusChart'), {
+                        type: 'doughnut',
+                        data: {
+                            labels,
+                            datasets: [{
+                                data,
+                                backgroundColor: colors.slice(0, data.length)
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: {
+                                legend: { position: 'bottom' }
+                            }
+                        }
+                    });
+                }
+            });
+    })();
+
+</script>
+
+<!------------------------------------------- AI Agent Script ------------------------------------------------->
+<script>
+    function toggleAIChat() {
+        const box = document.getElementById('ai-chat-box');
+        const tooltip = document.getElementById('ai-tooltip');
+        if (box.style.display === 'none' || box.style.display === '') {
+            box.style.display = 'flex';
+            tooltip.style.display = 'none';
+        } else {
+            box.style.display = 'none';
+            tooltip.style.display = 'block';
+        }
+    }
+
+    function sendAIMessage(event) {
+        event.preventDefault();
+        const input = document.getElementById('ai-input');
+        const text = input.value.trim();
+        if (!text) return;
+
+        const messagesContainer = document.getElementById('ai-messages');
+
+        // Add User Message
+        const userDiv = document.createElement('div');
+        userDiv.style.cssText = 'display: flex; gap: 8px; max-width: 85%; align-self: flex-end; flex-direction: row-reverse;';
+        userDiv.innerHTML = `
+            <div style="width: 28px; height: 28px; background: #e0f2fe; border-radius: 50%; flex-shrink: 0; display: flex; align-items: center; justify-content: center;">
+                <span class="material-icons" style="font-size: 14px; color: #0284c7;">person</span>
+            </div>
+            <div style="background: #0284c7; color: white; padding: 10px 14px; border-radius: 12px; border-top-right-radius: 0; font-size: 13px; line-height: 1.5;">
+                ${text}
+            </div>
+        `;
+        messagesContainer.appendChild(userDiv);
+        input.value = '';
+        messagesContainer.scrollTop = messagesContainer.scrollHeight;
+
+        // Add Typing Indicator
+        const typingDiv = document.createElement('div');
+        typingDiv.id = 'ai-typing';
+        typingDiv.style.cssText = 'display: flex; gap: 8px; max-width: 85%;';
+        typingDiv.innerHTML = `
+            <div style="width: 28px; height: 28px; background: #f1f5f9; border-radius: 50%; flex-shrink: 0; display: flex; align-items: center; justify-content: center;">
+                <span class="material-icons" style="font-size: 14px; color: #64748b;">auto_awesome</span>
+            </div>
+            <div style="background: #f8fafc; border: 1px solid #e2e8f0; padding: 10px 14px; border-radius: 12px; border-top-left-radius: 0; display: flex; gap: 4px; align-items: center;">
+                <div style="width: 6px; height: 6px; background: #cbd5e1; border-radius: 50%; animation: bounce 1s infinite -0.3s;"></div>
+                <div style="width: 6px; height: 6px; background: #cbd5e1; border-radius: 50%; animation: bounce 1s infinite -0.15s;"></div>
+                <div style="width: 6px; height: 6px; background: #cbd5e1; border-radius: 50%; animation: bounce 1s infinite;"></div>
+            </div>
+        `;
+         messagesContainer.appendChild(typingDiv);
+        messagesContainer.scrollTop = messagesContainer.scrollHeight;
+
+        // Send message to backend API
+        fetch('/api/chat/send/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]')?.value || ''
+            },
+            body: JSON.stringify({
+                message: text
+            })
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            return response.json();
+        })
+        .then(data => {
+            // Remove typing indicator
+            const typingElement = document.getElementById('ai-typing');
+            if (typingElement) {
+                typingElement.remove();
+            }
+
+            // Add AI Response
+            const aiDiv = document.createElement('div');
+            aiDiv.style.cssText = 'display: flex; gap: 8px; max-width: 85%;';
+            aiDiv.innerHTML = `
+                <div style="width: 28px; height: 28px; background: #f1f5f9; border-radius: 50%; flex-shrink: 0; display: flex; align-items: center; justify-content: center;">
+                    <span class="material-icons" style="font-size: 14px; color: #64748b;">auto_awesome</span>
+                </div>
+                <div style="background: #f8fafc; border: 1px solid #e2e8f0; padding: 10px 14px; border-radius: 12px; border-top-left-radius: 0; font-size: 13px; line-height: 1.5;">
+                    ${data.message || 'Unable to process your request.'}
+                </div>
+            `;
+            messagesContainer.appendChild(aiDiv);
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        })
+        .catch(error => {
+            // Remove typing indicator
+            const typingElement = document.getElementById('ai-typing');
+            if (typingElement) {
+                typingElement.remove();
+            }
+
+            // Add error message
+            const errorDiv = document.createElement('div');
+            errorDiv.style.cssText = 'display: flex; gap: 8px; max-width: 85%;';
+            errorDiv.innerHTML = `
+                <div style="width: 28px; height: 28px; background: #fee2e2; border-radius: 50%; flex-shrink: 0; display: flex; align-items: center; justify-content: center;">
+                    <span class="material-icons" style="font-size: 14px; color: #dc2626;">error</span>
+                </div>
+                <div style="background: #fecaca; border: 1px solid #fca5a5; padding: 10px 14px; border-radius: 12px; border-top-left-radius: 0; font-size: 13px; line-height: 1.5; color: #7f1d1d;">
+                    Sorry, I encountered an error. Please try again.
+                </div>
+            `;
+            messagesContainer.appendChild(errorDiv);
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+            console.error('Error:', error);
+        });
+    }
+</script>
+
+<style>
+    @keyframes bounce {
+
+        0%,
+        100% {
+            transform: translateY(0);
+        }
+
+        50% {
+            transform: translateY(-4px);
+        }
+    }
+</style>
+{% endblock %}

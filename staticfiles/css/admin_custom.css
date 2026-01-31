@@ -1,0 +1,27 @@
+/* Custom CSS for Unfold Admin */
+
+/* Target the logo container link in the sidebar header */
+aside a[href="/"] {
+    display: flex;
+    align-items: center;
+    justify-content: center; /* Center the content */
+    gap: 12px; /* Space between logo and text */
+    text-decoration: none;
+    width: 100%; /* Ensure it takes full width to center properly */
+}
+
+/* Inject text after the logo image */
+aside a[href="/"]::after {
+    content: "ShowMe Administration";
+    color: inherit; /* Use the sidebar text color */
+    font-size: 1.25rem; /* Increased font size slightly */
+    font-weight: 600; /* Semi-bold */
+    white-space: nowrap;
+    display: block;
+}
+
+/* Increase logo size */
+aside a[href="/"] img {
+    max-height: 48px; /* Increased from 32px */
+    width: auto;
+}
